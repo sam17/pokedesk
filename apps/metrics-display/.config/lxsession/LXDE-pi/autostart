@@ -1,0 +1,8 @@
+@lxpanel --profile LXDE-pi
+@pcmanfm --desktop --profile LXDE-pi
+@unclutter
+@chromium-browser --noerrdialogs --kiosk https://metrics.soumyadeep.in --incognito --disable-translate
+@/home/pi/kiosk.sh >> /home/pi/kiosk.log 2>&1
+@/home/pi/rotate_display.sh
+
+
