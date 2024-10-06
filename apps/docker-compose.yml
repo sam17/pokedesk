@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   ha-monitoring:
-    image: ha-monitoring:latest
+    image: registry.digitalocean.com/pokedesk-cr/ha-monitoring:latest
     build: .
     deploy:
       mode: replicated
