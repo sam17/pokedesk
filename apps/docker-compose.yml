@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  ha-monitoring:
+    image: ha-monitoring:latest
+    build: .
+    deploy:
+      mode: replicated
+      replicas: 1
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
+    command: ["crond", "-f"]
