@@ -17,14 +17,16 @@ COPY . /app
 # Create a script to save environment variables
 RUN echo '#!/bin/bash\n\
 printenv | grep "TELEGRAM" > /etc/environment\n\
-cron -f' > /app/start.sh && \
+# Redirect cron logs to docker logs\n\
+service cron start\n\
+tail -f /var/log/cron_output.log' > /app/start.sh && \
 chmod +x /app/start.sh
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir python-telegram-bot
 
 # Set up crontab differently
-RUN echo "* * * * * root . /etc/environment && /app/run_with_env.sh >> /var/log/cron_output.log 2>&1" > /etc/cron.d/ha-monitoring-cron \
+RUN echo "* * * * * root . /etc/environment && /app/run_with_env.sh 2>&1 | tee -a /var/log/cron_output.log" > /etc/cron.d/ha-monitoring-cron \
     && chmod 0644 /etc/cron.d/ha-monitoring-cron \
     && crontab /etc/cron.d/ha-monitoring-cron
 
