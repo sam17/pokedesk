@@ -55,17 +55,22 @@ async def sendNotification(message):
 
 
 if __name__ == "__main__":
-    ping_success = pingHA()
-    curl_success = curlHA()
+    # log line for debugging
+    print("Starting HA monitoring script")
 
-    if ping_success and curl_success:
-        message = "Both ping and curl were successful."
-    elif not ping_success and not curl_success:
+    ping_success = pingHA()
+    print("Ping success: ", ping_success)
+    curl_success = curlHA()
+    print("Curl success: ", curl_success)
+
+    if not ping_success and not curl_success:
         message = "Both ping and curl failed."
+        asyncio.run(sendNotification(message))
     elif not ping_success:
         message = "Ping failed, but curl was successful."
-    else:
+        asyncio.run(sendNotification(message))
+    elif not curl_success:
         message = "Curl failed, but ping was successful."
-
-    asyncio.run(sendNotification(message))
-
+        asyncio.run(sendNotification(message))
+    else:
+        print("Both ping and curl were successful.")

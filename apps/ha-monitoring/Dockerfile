@@ -4,14 +4,37 @@ FROM python:3.9-slim
 # Set the working directory in the container
 WORKDIR /app
 
+# Install necessary utilities
+RUN apt-get update && apt-get install -y \
+    iputils-ping \
+    curl \
+    cron \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy the current directory contents into the container at /app
 COPY . /app
+
+# Create a script to save environment variables
+RUN echo '#!/bin/bash\n\
+printenv | grep "TELEGRAM" > /etc/environment\n\
+# Redirect cron logs to docker logs\n\
+service cron start\n\
+tail -f /var/log/cron_output.log' > /app/start.sh && \
+chmod +x /app/start.sh
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir python-telegram-bot
 
-# Make the script executable
+# Set up crontab differently
+RUN echo "* * * * * root . /etc/environment && /app/run_with_env.sh 2>&1 | tee -a /var/log/cron_output.log" > /etc/cron.d/ha-monitoring-cron \
+    && chmod 0644 /etc/cron.d/ha-monitoring-cron \
+    && crontab /etc/cron.d/ha-monitoring-cron
+
+RUN chmod +x /app/run_with_env.sh
 RUN chmod +x /app/run.py
 
-# Run the script
-CMD ["python", "/app/run.py"]
+# Create log file and set permissions
+RUN touch /var/log/cron_output.log && chmod 0666 /var/log/cron_output.log
+
+# Run the start script instead of cron directly
+CMD ["/app/start.sh"]
