@@ -14,22 +14,25 @@ RUN apt-get update && apt-get install -y \
 # Copy the current directory contents into the container at /app
 COPY . /app
 
-# Copy the cron job file to the cron.d directory
-COPY cronjob /etc/cron.d/ha-monitoring-cron
-
-# Give execution rights on the cron job
-RUN chmod 0644 /etc/cron.d/ha-monitoring-cron
-
-# Apply the cron job
-RUN crontab /etc/cron.d/ha-monitoring-cron
+# Create a script to save environment variables
+RUN echo '#!/bin/bash\n\
+printenv | grep "TELEGRAM" > /etc/environment\n\
+cron -f' > /app/start.sh && \
+chmod +x /app/start.sh
 
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir python-telegram-bot
 
-RUN chmod +x /app/run_with_env.sh
+# Set up crontab differently
+RUN echo "* * * * * root . /etc/environment && /app/run_with_env.sh >> /var/log/cron_output.log 2>&1" > /etc/cron.d/ha-monitoring-cron \
+    && chmod 0644 /etc/cron.d/ha-monitoring-cron \
+    && crontab /etc/cron.d/ha-monitoring-cron
 
-# Make the script executable
+RUN chmod +x /app/run_with_env.sh
 RUN chmod +x /app/run.py
 
-# Run the cron service in the foreground
-CMD ["cron", "-f"]
+# Create log file and set permissions
+RUN touch /var/log/cron_output.log && chmod 0666 /var/log/cron_output.log
+
+# Run the start script instead of cron directly
+CMD ["/app/start.sh"]
