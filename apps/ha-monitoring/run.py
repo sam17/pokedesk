@@ -3,12 +3,14 @@ from telegram import Bot
 import asyncio
 import os
 
+home_assistant_ip = os.getenv('HOME_ASSISTANT_IP')
+
 
 def pingHA():
     # Ping homeassistant.local and check for at least 3 successful responses
     try:
         response = subprocess.run(
-            ['ping', '-c', '3', 'homeassistant.local'],
+            ['ping', '-c', '3', f'{home_assistant_ip}'],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
@@ -26,7 +28,6 @@ def pingHA():
 def curlHA():
     # Curl homeassistant.local and check for a 200 response
     try:
-        home_assistant_ip = os.getenv('HOME_ASSISTANT_IP')
         response = subprocess.run(
             ['curl', '-I', f'http://{home_assistant_ip}:8123'],
             stdout=subprocess.PIPE,
