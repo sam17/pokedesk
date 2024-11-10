@@ -26,8 +26,9 @@ def pingHA():
 def curlHA():
     # Curl homeassistant.local and check for a 200 response
     try:
+        home_assistant_ip = os.getenv('HOME_ASSISTANT_IP')
         response = subprocess.run(
-            ['curl', '-I', 'http://homeassistant.local:8123'],
+            ['curl', '-I', f'http://{home_assistant_ip}:8123'],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
