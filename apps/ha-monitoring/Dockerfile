@@ -17,6 +17,7 @@ COPY . /app
 # Create a script to save environment variables
 RUN echo '#!/bin/bash\n\
 printenv | grep "TELEGRAM" > /etc/environment\n\
+printenv | grep "HOME_ASSISTANT_IP" >> /etc/environment\n\
 # Redirect cron logs to docker logs\n\
 service cron start\n\
 tail -f /var/log/cron_output.log' > /app/start.sh && \
