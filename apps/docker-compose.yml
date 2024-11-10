@@ -1,15 +1,38 @@
 version: '3.8'
 
 services:
-  ha-monitoring:
-    image: registry.digitalocean.com/pokedesk-cr/ha-monitoring:latest
-    build: .
+  monitoring:
+    image: registry.digitalocean.com/pokedesk-cr/ha-monitoring:latest  # Replace with your registry if using one
+    configs:
+      - source: registry-auth
+        target: /root/.docker/config.json
+        mode: 0444
     deploy:
       mode: replicated
       replicas: 1
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
+      placement:
+        constraints:
+          - node.role == worker  # This will ensure it runs on worker nodes
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+    env_file:
+      - .env
     environment:
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID}
-    command: ["crond", "-f"]
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      - HOME_ASSISTANT_IP=${HOME_ASSISTANT_IP}
+
+secrets:
+  registry_auth:
+    external: true
+
+configs:
+  registry-auth:
+    external: true
