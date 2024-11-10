@@ -1,2 +1,2 @@
-*/5 * * * * env TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID /app/run_with_env.sh >> /var/log/cron_output.log 2>&1
+*/5 * * * * env HOME_ASSISTANT_IP=$HOME_ASSISTANT_IP TELEGRAM_BOT_TOKEN=$TELEGRAM_BOT_TOKEN TELEGRAM_CHAT_ID=$TELEGRAM_CHAT_ID /app/run_with_env.sh >> /var/log/cron_output.log 2>&1
 
