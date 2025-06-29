@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Display</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        #metrics-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+        
+        #camera-container {
+            width: 75vw;
+            height: 75vh;
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 2px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+            background: black;
+        }
+        
+        #camera-feed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .visible {
+            display: block !important;
+        }
+        
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: black;
+            font-size: 24px;
+            z-index: 10;
+        }
+        
+        #status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 16px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            z-index: 1000;
+        }
+        
+        #status-bar.hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading metrics...</div>
+    <iframe id="metrics-iframe" src="https://metrics.soumyadeep.in"></iframe>
+    
+    <div id="camera-container">
+        <img id="camera-feed" src="" alt="Camera Feed">
+    </div>
+    
+    <div id="status-bar">
+        <div id="motion-status">Motion: Unknown</div>
+        <div id="last-check">Last check: Never</div>
+    </div>
+    
+    <script>
+        let cameraTimer = null;
+        let motionDetections = 0;
+        const metricsIframe = document.getElementById('metrics-iframe');
+        const cameraContainer = document.getElementById('camera-container');
+        const cameraFeed = document.getElementById('camera-feed');
+        const statusBar = document.getElementById('status-bar');
+        const motionStatus = document.getElementById('motion-status');
+        const lastCheck = document.getElementById('last-check');
+        
+        function showCamera(cameraUrl) {
+            if (cameraTimer) {
+                clearTimeout(cameraTimer);
+            }
+            
+            motionDetections++;
+            updateMotionStatus('DETECTED', true);
+            
+            cameraFeed.src = cameraUrl;
+            metricsIframe.classList.add('hidden');
+            cameraContainer.classList.add('visible');
+            
+            // No fixed timer - camera will show as long as motion is active + 10s cooldown
+        }
+        
+        function showMetrics() {
+            if (cameraTimer) {
+                clearTimeout(cameraTimer);
+                cameraTimer = null;
+            }
+            
+            cameraContainer.classList.remove('visible');
+            cameraContainer.classList.add('hidden');
+            metricsIframe.classList.remove('hidden');
+            cameraFeed.src = '';
+        }
+        
+        function updateMotionStatus(status, isDetected = false) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            
+            if (isDetected) {
+                motionStatus.textContent = `Motion: ${status} (${motionDetections} total)`;
+                motionStatus.style.color = '#ff6b6b';
+            } else {
+                motionStatus.textContent = `Motion: ${status} (${motionDetections} total)`;
+                motionStatus.style.color = '#51cf66';
+            }
+        }
+        
+        function updateLastCheck() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            lastCheck.textContent = `Last check: ${timeStr}`;
+        }
+        
+        // Listen for webhook calls from Home Assistant
+        function setupWebhookListener() {
+            // Poll for motion detection events
+            setInterval(async () => {
+                try {
+                    updateLastCheck();
+                    const response = await fetch('/api/motion-check');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.motion_detected && data.camera_url) {
+                            showCamera(data.camera_url);
+                        } else {
+                            updateMotionStatus('Clear', false);
+                        }
+                    } else {
+                        updateMotionStatus('Error', false);
+                    }
+                } catch (error) {
+                    console.log('Motion check failed:', error);
+                    updateMotionStatus('Offline', false);
+                }
+            }, 1000);
+        }
+        
+        // Initialize
+        setupWebhookListener();
+        
+        // Initialize status immediately
+        updateMotionStatus('Initializing...', false);
+        updateLastCheck();
+        
+        // Hide loading when iframe loads
+        const loading = document.getElementById('loading');
+        metricsIframe.addEventListener('load', () => {
+            loading.style.display = 'none';
+        });
+        
+        // Show error if iframe fails to load
+        metricsIframe.addEventListener('error', () => {
+            loading.textContent = 'Failed to load metrics. Check if metrics.soumyadeep.in is accessible.';
+        });
+        
+        // Timeout for loading
+        setTimeout(() => {
+            if (loading.style.display !== 'none') {
+                loading.textContent = 'Taking longer than expected to load...';
+            }
+        }, 5000);
+        
+        // Expose function for direct webhook calls
+        window.triggerCamera = function(cameraUrl) {
+            showCamera(cameraUrl || '/api/camera-stream');
+        };
+    </script>
+</body>
+</html>

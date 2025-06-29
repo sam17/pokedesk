@@ -1,0 +1,14 @@
+[project]
+name = "cutiepie"
+version = "0.1.0"
+description = "Home display system with metrics and camera switching"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "aiohttp>=3.8.0",
+    "aiofiles>=0.8.0",
+    "watchdog>=3.0.0",
+]
+
+[tool.uv]
+dev-dependencies = []

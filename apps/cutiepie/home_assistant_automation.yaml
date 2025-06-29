@@ -1,0 +1,32 @@
+# Home Assistant Automation Example
+# Add this to your Home Assistant configuration.yaml or automations.yaml
+
+automation:
+  - alias: "Motion Detection Display Switch"
+    description: "Switch house display to camera when motion detected"
+    trigger:
+      - platform: state
+        entity_id: binary_sensor.your_camera_motion  # Replace with your motion sensor
+        to: "on"
+    action:
+      - service: rest_command.trigger_display_camera
+        data: {}
+
+# REST command to trigger the display
+rest_command:
+  trigger_display_camera:
+    url: "http://YOUR_DISPLAY_IP:8080/webhook/motion"  # Replace with your display IP
+    method: POST
+    headers:
+      Content-Type: "application/json"
+    payload: |
+      {
+        "camera_url": "{{ states.camera.your_camera.attributes.entity_picture }}"
+      }
+
+# Optional: Add camera entity configuration if needed
+camera:
+  - platform: generic
+    name: "Your Camera"
+    still_image_url: "http://YOUR_CAMERA_IP/snapshot"
+    stream_source: "rtsp://YOUR_CAMERA_IP/stream"
