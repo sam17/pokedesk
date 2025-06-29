@@ -46,6 +46,27 @@
             object-fit: cover;
         }
         
+        #detection-overlay {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 20;
+        }
+        
+        #detection-type.person {
+            background: rgba(255, 107, 107, 0.9);
+        }
+        
+        #detection-type.motion {
+            background: rgba(81, 207, 102, 0.9);
+        }
+        
         .hidden {
             display: none !important;
         }
@@ -89,6 +110,9 @@
     
     <div id="camera-container">
         <img id="camera-feed" src="" alt="Camera Feed">
+        <div id="detection-overlay">
+            <div id="detection-type">Motion Detected</div>
+        </div>
     </div>
     
     <div id="status-bar">
@@ -105,8 +129,9 @@
         const statusBar = document.getElementById('status-bar');
         const motionStatus = document.getElementById('motion-status');
         const lastCheck = document.getElementById('last-check');
+        const detectionType = document.getElementById('detection-type');
         
-        function showCamera(cameraUrl) {
+        function showCamera(cameraUrl, detectionTypeStr = 'motion') {
             if (cameraTimer) {
                 clearTimeout(cameraTimer);
             }
@@ -114,12 +139,16 @@
             motionDetections++;
             updateMotionStatus('DETECTED', true);
             
+            // Update detection type display
+            detectionType.textContent = detectionTypeStr === 'person' ? 'Person Detected' : 'Motion Detected';
+            detectionType.className = detectionTypeStr;
+            
             cameraFeed.src = cameraUrl;
             metricsIframe.classList.add('hidden');
             cameraContainer.classList.remove('hidden');
             cameraContainer.classList.add('visible');
             
-            // No fixed timer - camera will show as long as motion is active + 5s cooldown
+            // No fixed timer - camera will show as long as detection is active + 5s cooldown
         }
         
         function showMetrics() {
@@ -188,7 +217,7 @@
                         console.log('Motion API response:', data);
                         
                         if (data.motion_detected && data.camera_url) {
-                            showCamera(data.camera_url);
+                            showCamera(data.camera_url, data.detection_type || 'motion');
                         } else {
                             updateMotionStatus('Clear', false);
                             // Switch back to metrics if camera is currently showing
@@ -238,8 +267,8 @@
         }, 5000);
         
         // Expose function for direct webhook calls
-        window.triggerCamera = function(cameraUrl) {
-            showCamera(cameraUrl || '/api/camera-stream');
+        window.triggerCamera = function(cameraUrl, detectionTypeStr = 'motion') {
+            showCamera(cameraUrl || '/api/camera-stream', detectionTypeStr);
         };
     </script>
 </body>

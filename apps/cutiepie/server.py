@@ -45,7 +45,10 @@ class HomeDisplayServer:
         self.ha_url = None
         self.camera_entity_id = None
         self.motion_sensor_entity_id = None
+        self.person_sensor_entity_id = None
         self.last_motion_state = "off"
+        self.last_person_state = "off"
+        self.detection_type = "motion"
         
         # Load config
         self.load_config()
@@ -72,8 +75,9 @@ class HomeDisplayServer:
         self.ha_url = os.getenv('HA_URL', 'http://homeassistant.local:8123')
         self.camera_entity_id = os.getenv('CAMERA_ENTITY_ID')
         self.motion_sensor_entity_id = os.getenv('MOTION_SENSOR_ENTITY_ID')
+        self.person_sensor_entity_id = os.getenv('PERSON_SENSOR_ENTITY_ID')
         
-        logger.info(f"Loaded config - HA URL: {self.ha_url}, Camera: {self.camera_entity_id}, Motion: {self.motion_sensor_entity_id}")
+        logger.info(f"Loaded config - HA URL: {self.ha_url}, Camera: {self.camera_entity_id}, Motion: {self.motion_sensor_entity_id}, Person: {self.person_sensor_entity_id}")
     
     async def webhook_motion(self, request):
         """Webhook endpoint for Home Assistant motion detection"""
@@ -84,8 +88,9 @@ class HomeDisplayServer:
             self.motion_detected = True
             self.motion_timestamp = datetime.now()
             
-            # Get camera stream URL from data or use default
+            # Get camera stream URL and detection type from data
             self.camera_url = data.get('camera_url', '/api/camera-stream')
+            self.detection_type = data.get('detection_type', 'motion')
             
             return web.json_response({"status": "ok"})
         except Exception as e:
@@ -93,52 +98,92 @@ class HomeDisplayServer:
             return web.json_response({"error": str(e)}, status=400)
     
     async def poll_motion_sensor(self):
-        """Poll Home Assistant motion sensor"""
-        if not self.ha_token or not self.motion_sensor_entity_id:
-            logger.warning("Missing HA token or motion sensor entity ID - polling disabled")
+        """Poll Home Assistant motion and person sensors"""
+        if not self.ha_token or (not self.motion_sensor_entity_id and not self.person_sensor_entity_id):
+            logger.warning("Missing HA token or sensor entity IDs - polling disabled")
+            # Still run loop for webhook-only mode
+            while True:
+                await asyncio.sleep(1)
             return
         
-        logger.info(f"Starting motion sensor polling for {self.motion_sensor_entity_id}")
+        sensors_to_poll = []
+        if self.motion_sensor_entity_id:
+            sensors_to_poll.append(('motion', self.motion_sensor_entity_id))
+        if self.person_sensor_entity_id:
+            sensors_to_poll.append(('person', self.person_sensor_entity_id))
+        
+        logger.info(f"Starting sensor polling for: {[s[0] for s in sensors_to_poll]}")
         
         while True:
             try:
                 async with ClientSession() as session:
                     headers = {"Authorization": f"Bearer {self.ha_token}"}
-                    url = f"{self.ha_url}/api/states/{self.motion_sensor_entity_id}"
                     
-                    async with session.get(url, headers=headers) as resp:
-                        if resp.status == 200:
-                            data = await resp.json()
-                            current_state = data.get('state', 'off')
-                            
-                            # Log state changes
-                            if self.last_motion_state != current_state:
-                                logger.info(f"Motion state changed: {self.last_motion_state} -> {current_state}")
-                            
-                            # Check for state change from off to on
-                            if self.last_motion_state == 'off' and current_state == 'on':
-                                logger.info("Motion detected via polling!")
-                                self.motion_detected = True
-                                self.motion_timestamp = datetime.now()
-                                self.camera_url = "/api/camera-stream"
-                            elif self.last_motion_state == 'on' and current_state == 'off':
-                                logger.info("Motion ended via polling - starting 5s cooldown")
-                                self.motion_timestamp = datetime.now()  # Reset timestamp for cooldown
-                            elif current_state == 'on':
-                                # If still on, keep motion detected
-                                self.motion_detected = True
-                                if not self.motion_timestamp:
-                                    self.motion_timestamp = datetime.now()
-                                self.camera_url = "/api/camera-stream"
-                            
-                            self.last_motion_state = current_state
-                        else:
-                            logger.error(f"Failed to poll motion sensor: {resp.status}")
+                    for sensor_type, entity_id in sensors_to_poll:
+                        url = f"{self.ha_url}/api/states/{entity_id}"
+                        
+                        async with session.get(url, headers=headers) as resp:
+                            if resp.status == 200:
+                                data = await resp.json()
+                                current_state = data.get('state', 'off')
+                                
+                                if sensor_type == 'motion':
+                                    # Log state changes
+                                    if self.last_motion_state != current_state:
+                                        logger.info(f"Motion state changed: {self.last_motion_state} -> {current_state}")
+                                    
+                                    # Check for state change from off to on
+                                    if self.last_motion_state == 'off' and current_state == 'on':
+                                        logger.info("Motion detected via polling!")
+                                        self.motion_detected = True
+                                        self.motion_timestamp = datetime.now()
+                                        self.camera_url = "/api/camera-stream"
+                                        self.detection_type = "motion"
+                                    elif self.last_motion_state == 'on' and current_state == 'off':
+                                        logger.info("Motion ended via polling - starting 5s cooldown")
+                                        self.motion_timestamp = datetime.now()  # Reset timestamp for cooldown
+                                    elif current_state == 'on':
+                                        # If still on, keep motion detected
+                                        self.motion_detected = True
+                                        if not self.motion_timestamp:
+                                            self.motion_timestamp = datetime.now()
+                                        self.camera_url = "/api/camera-stream"
+                                        self.detection_type = "motion"
+                                    
+                                    self.last_motion_state = current_state
+                                    
+                                elif sensor_type == 'person':
+                                    # Log state changes
+                                    if self.last_person_state != current_state:
+                                        logger.info(f"Person state changed: {self.last_person_state} -> {current_state}")
+                                    
+                                    # Check for state change from off to on
+                                    if self.last_person_state == 'off' and current_state == 'on':
+                                        logger.info("Person detected via polling!")
+                                        self.motion_detected = True
+                                        self.motion_timestamp = datetime.now()
+                                        self.camera_url = "/api/camera-stream"
+                                        self.detection_type = "person"
+                                    elif self.last_person_state == 'on' and current_state == 'off':
+                                        logger.info("Person detection ended via polling - starting 5s cooldown")
+                                        self.motion_timestamp = datetime.now()  # Reset timestamp for cooldown
+                                    elif current_state == 'on':
+                                        # If still on, keep person detected
+                                        self.motion_detected = True
+                                        if not self.motion_timestamp:
+                                            self.motion_timestamp = datetime.now()
+                                        self.camera_url = "/api/camera-stream"
+                                        self.detection_type = "person"
+                                    
+                                    self.last_person_state = current_state
+                                    
+                            else:
+                                logger.error(f"Failed to poll {sensor_type} sensor: {resp.status}")
                             
             except Exception as e:
-                logger.error(f"Motion polling error: {e}")
+                logger.error(f"Sensor polling error: {e}")
             
-            # Poll every 0.5 seconds for responsive motion detection
+            # Poll every 0.5 seconds for responsive detection
             await asyncio.sleep(0.5)
     
     async def api_motion_check(self, request):
@@ -146,15 +191,16 @@ class HomeDisplayServer:
         current_time = datetime.now()
         
         # Log current state for debugging
-        logger.debug(f"Motion check - State: {self.last_motion_state}, Detected: {self.motion_detected}, Timestamp: {self.motion_timestamp}")
+        logger.debug(f"Detection check - Motion: {self.last_motion_state}, Person: {self.last_person_state}, Detected: {self.motion_detected}, Type: {self.detection_type}")
         
-        # If motion is currently active, show camera
-        if self.last_motion_state == 'on':
+        # If motion or person is currently active, show camera
+        if self.last_motion_state == 'on' or self.last_person_state == 'on':
             return web.json_response({
                 "motion_detected": True,
                 "camera_url": self.camera_url or "/api/camera-stream",
                 "timestamp": self.motion_timestamp.isoformat() if self.motion_timestamp else current_time.isoformat(),
-                "reason": "motion_active"
+                "reason": f"{self.detection_type}_active",
+                "detection_type": self.detection_type
             })
         
         # If motion recently turned off, show camera for 5 more seconds
@@ -162,13 +208,14 @@ class HomeDisplayServer:
             current_time - self.motion_timestamp < timedelta(seconds=5)):
             
             seconds_left = 5 - (current_time - self.motion_timestamp).total_seconds()
-            logger.debug(f"Motion cooldown - {seconds_left:.1f}s remaining")
+            logger.debug(f"Motion cooldown - {seconds_left:.1f}s remaining, detection_type: {self.detection_type}")
             
             return web.json_response({
                 "motion_detected": True,
                 "camera_url": self.camera_url or "/api/camera-stream",
                 "timestamp": self.motion_timestamp.isoformat(),
-                "reason": "motion_cooldown",
+                "reason": f"{self.detection_type}_cooldown",
+                "detection_type": self.detection_type,
                 "cooldown_remaining": seconds_left
             })
         else:
