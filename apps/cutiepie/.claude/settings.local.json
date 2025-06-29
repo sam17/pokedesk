@@ -5,7 +5,10 @@
       "Bash(uv run:*)",
       "Bash(curl:*)",
       "Bash(export:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(pkill:*)",
+      "Bash(ls:*)"
     ],
     "deny": []
   }

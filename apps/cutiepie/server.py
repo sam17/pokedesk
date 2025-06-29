@@ -11,8 +11,30 @@ from aiohttp import web, ClientSession
 import aiofiles
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+import logging.handlers
+
+# Create logger
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+# Create handlers
+console_handler = logging.StreamHandler()
+file_handler = logging.FileHandler('motion_debug.log')
+
+# Create formatter
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+# Set formatter for handlers
+console_handler.setFormatter(formatter)
+file_handler.setFormatter(formatter)
+
+# Add handlers to logger
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+# Set levels
+console_handler.setLevel(logging.INFO)
+file_handler.setLevel(logging.DEBUG)
 
 class HomeDisplayServer:
     def __init__(self):
@@ -123,6 +145,9 @@ class HomeDisplayServer:
         """API endpoint to check for motion detection"""
         current_time = datetime.now()
         
+        # Log current state for debugging
+        logger.debug(f"Motion check - State: {self.last_motion_state}, Detected: {self.motion_detected}, Timestamp: {self.motion_timestamp}")
+        
         # If motion is currently active, show camera
         if self.last_motion_state == 'on':
             return web.json_response({
@@ -136,16 +161,21 @@ class HomeDisplayServer:
         if (self.motion_detected and self.motion_timestamp and 
             current_time - self.motion_timestamp < timedelta(seconds=10)):
             
+            seconds_left = 10 - (current_time - self.motion_timestamp).total_seconds()
+            logger.debug(f"Motion cooldown - {seconds_left:.1f}s remaining")
+            
             return web.json_response({
                 "motion_detected": True,
                 "camera_url": self.camera_url or "/api/camera-stream",
                 "timestamp": self.motion_timestamp.isoformat(),
-                "reason": "motion_cooldown"
+                "reason": "motion_cooldown",
+                "cooldown_remaining": seconds_left
             })
         else:
             # Reset motion detection after cooldown
             if self.motion_detected and self.motion_timestamp:
                 if current_time - self.motion_timestamp >= timedelta(seconds=10):
+                    logger.info("Motion cooldown expired - clearing detection")
                     self.motion_detected = False
                     self.motion_timestamp = None
                     self.camera_url = None

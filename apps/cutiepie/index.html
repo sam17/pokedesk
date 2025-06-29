@@ -19,6 +19,10 @@
             height: 100%;
             border: none;
             display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
         }
         
         #camera-container {
@@ -33,6 +37,7 @@
             border-radius: 8px;
             overflow: hidden;
             background: black;
+            z-index: 10;
         }
         
         #camera-feed {
@@ -117,15 +122,36 @@
         }
         
         function showMetrics() {
+            console.log('showMetrics() called');
             if (cameraTimer) {
                 clearTimeout(cameraTimer);
                 cameraTimer = null;
             }
             
+            console.log('Hiding camera container');
             cameraContainer.classList.remove('visible');
             cameraContainer.classList.add('hidden');
+            
+            console.log('Showing metrics iframe');
             metricsIframe.classList.remove('hidden');
+            metricsIframe.style.display = 'block';
+            metricsIframe.style.visibility = 'visible';
+            metricsIframe.style.opacity = '1';
+            metricsIframe.style.zIndex = '1';
+            
+            console.log('Clearing camera src');
             cameraFeed.src = '';
+            
+            console.log('Camera hidden:', cameraContainer.classList.contains('hidden'));
+            console.log('Metrics visible:', !metricsIframe.classList.contains('hidden'));
+            
+            // Debug iframe state
+            const computedStyle = window.getComputedStyle(metricsIframe);
+            console.log('Iframe computed display:', computedStyle.display);
+            console.log('Iframe computed visibility:', computedStyle.visibility);
+            console.log('Iframe computed zIndex:', computedStyle.zIndex);
+            console.log('Iframe src:', metricsIframe.src);
+            console.log('Iframe loaded:', metricsIframe.contentDocument ? 'yes' : 'no');
         }
         
         function updateMotionStatus(status, isDetected = false) {
@@ -149,19 +175,29 @@
         
         // Listen for webhook calls from Home Assistant
         function setupWebhookListener() {
+            console.log('Setting up motion polling...');
+            
             // Poll for motion detection events
-            setInterval(async () => {
+            const pollInterval = setInterval(async () => {
                 try {
                     updateLastCheck();
                     const response = await fetch('/api/motion-check');
                     if (response.ok) {
                         const data = await response.json();
+                        console.log('Motion API response:', data);
+                        
                         if (data.motion_detected && data.camera_url) {
                             showCamera(data.camera_url);
                         } else {
                             updateMotionStatus('Clear', false);
+                            // Switch back to metrics if camera is currently showing
+                            if (!cameraContainer.classList.contains('hidden')) {
+                                console.log('Motion cleared - switching back to metrics');
+                                showMetrics();
+                            }
                         }
                     } else {
+                        console.log('Motion API error:', response.status);
                         updateMotionStatus('Error', false);
                     }
                 } catch (error) {
@@ -169,6 +205,10 @@
                     updateMotionStatus('Offline', false);
                 }
             }, 1000);
+            
+            // Store interval ID for debugging
+            window.motionPollInterval = pollInterval;
+            console.log('Motion polling started with interval ID:', pollInterval);
         }
         
         // Initialize
