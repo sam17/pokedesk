@@ -122,7 +122,7 @@ class HomeDisplayServer:
                                 self.motion_timestamp = datetime.now()
                                 self.camera_url = "/api/camera-stream"
                             elif self.last_motion_state == 'on' and current_state == 'off':
-                                logger.info("Motion ended via polling - starting 10s cooldown")
+                                logger.info("Motion ended via polling - starting 5s cooldown")
                                 self.motion_timestamp = datetime.now()  # Reset timestamp for cooldown
                             elif current_state == 'on':
                                 # If still on, keep motion detected
@@ -157,11 +157,11 @@ class HomeDisplayServer:
                 "reason": "motion_active"
             })
         
-        # If motion recently turned off, show camera for 10 more seconds
+        # If motion recently turned off, show camera for 5 more seconds
         if (self.motion_detected and self.motion_timestamp and 
-            current_time - self.motion_timestamp < timedelta(seconds=10)):
+            current_time - self.motion_timestamp < timedelta(seconds=5)):
             
-            seconds_left = 10 - (current_time - self.motion_timestamp).total_seconds()
+            seconds_left = 5 - (current_time - self.motion_timestamp).total_seconds()
             logger.debug(f"Motion cooldown - {seconds_left:.1f}s remaining")
             
             return web.json_response({
@@ -174,7 +174,7 @@ class HomeDisplayServer:
         else:
             # Reset motion detection after cooldown
             if self.motion_detected and self.motion_timestamp:
-                if current_time - self.motion_timestamp >= timedelta(seconds=10):
+                if current_time - self.motion_timestamp >= timedelta(seconds=5):
                     logger.info("Motion cooldown expired - clearing detection")
                     self.motion_detected = False
                     self.motion_timestamp = None

@@ -116,9 +116,10 @@
             
             cameraFeed.src = cameraUrl;
             metricsIframe.classList.add('hidden');
+            cameraContainer.classList.remove('hidden');
             cameraContainer.classList.add('visible');
             
-            // No fixed timer - camera will show as long as motion is active + 10s cooldown
+            // No fixed timer - camera will show as long as motion is active + 5s cooldown
         }
         
         function showMetrics() {
