@@ -2,6 +2,15 @@ import subprocess
 from telegram import Bot
 import asyncio
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+logger = logging.getLogger(__name__)
 
 home_assistant_ip = os.getenv('HOME_ASSISTANT_IP')
 
@@ -15,13 +24,13 @@ def pingHA():
             stderr=subprocess.PIPE
         )
         if response.returncode == 0:
-            print("Ping successful")
+            logger.info("Ping successful")
             return True
         else:
-            print("Ping failed")
+            logger.warning("Ping failed")
             return False
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
         return False
 
 
@@ -34,13 +43,13 @@ def curlHA():
             stderr=subprocess.PIPE
         )
         if response.returncode == 0:
-            print("Curl successful")
+            logger.info("Curl successful")
             return True
         else:
-            print("Curl failed")
+            logger.warning("Curl failed")
             return False
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
         return False
 
 
@@ -51,19 +60,18 @@ async def sendNotification(message):
         chat_id = os.getenv('TELEGRAM_CHAT_ID')
         bot = Bot(token=bot_token)
         await bot.send_message(chat_id=chat_id, text=message)
-        print("Notification sent successfully")
+        logger.info("Notification sent successfully")
     except Exception as e:
-        print(f"An error occurred while sending notification: {e}")
+        logger.error(f"An error occurred while sending notification: {e}")
 
 
 if __name__ == "__main__":
-    # log line for debugging
-    print("Starting HA monitoring script")
+    logger.info("Starting HA monitoring script")
 
     ping_success = pingHA()
-    print("Ping success: ", ping_success)
+    logger.info(f"Ping success: {ping_success}")
     curl_success = curlHA()
-    print("Curl success: ", curl_success)
+    logger.info(f"Curl success: {curl_success}")
 
     if not ping_success and not curl_success:
         message = "Both ping and curl failed."
@@ -75,4 +83,4 @@ if __name__ == "__main__":
         message = "Curl failed, but ping was successful."
         asyncio.run(sendNotification(message))
     else:
-        print("Both ping and curl were successful.")
+        logger.info("Both ping and curl were successful.")
