@@ -29,6 +29,36 @@ services:
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
       - HOME_ASSISTANT_IP=${HOME_ASSISTANT_IP}
 
+  whoop-collector:
+    image: registry.digitalocean.com/pokedesk-cr/whoop-collector:latest
+    configs:
+      - source: registry-auth
+        target: /root/.docker/config.json
+        mode: 0444
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.role == worker
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+    env_file:
+      - .env
+    environment:
+      - WHOOP_CLIENT_ID=${WHOOP_CLIENT_ID}
+      - WHOOP_CLIENT_SECRET=${WHOOP_CLIENT_SECRET}
+      - WHOOP_ACCESS_TOKEN=${WHOOP_ACCESS_TOKEN}
+      - WHOOP_REFRESH_TOKEN=${WHOOP_REFRESH_TOKEN}
+      - DATABASE_URL=${DATABASE_URL}
+
 secrets:
   registry_auth:
     external: true
