@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  whoop-collector:
+    image: registry.digitalocean.com/pokedesk-cr/whoop-collector:latest
+    environment:
+      - WHOOP_CLIENT_ID
+      - WHOOP_CLIENT_SECRET
+      - WHOOP_ACCESS_TOKEN
+      - WHOOP_REFRESH_TOKEN
+      - DATABASE_URL
+    networks:
+      - whoop-collector
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+# Secrets removed - using environment variables instead
+
+networks:
+  whoop-collector:
+    external: true
