@@ -1,0 +1,97 @@
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-6"
+      },
+      "sandbox": {
+        "mode": "off"
+      },
+      "memorySearch": {
+        "enabled": true
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "identity": {
+          "name": "Dobby",
+          "theme": "loyal, eager personal assistant who is always happy to help",
+          "emoji": "🧦"
+        }
+      }
+    ]
+  },
+  "channels": {
+    "discord": {
+      "enabled": true,
+      "token": {
+        "source": "env",
+        "provider": "default",
+        "id": "DOBBY_DISCORD_TOKEN"
+      },
+      "dmPolicy": "allowlist",
+      "dm": {
+        "allowFrom": ["734510552864260117"]
+      },
+      "groupPolicy": "allowlist",
+      "guilds": {
+        "1485246619803848756": {
+          "requireMention": false,
+          "users": ["734510552864260117"]
+        }
+      }
+    }
+  },
+  "tools": {
+    "exec": {
+      "host": "gateway",
+      "security": "full",
+      "ask": "off"
+    }
+  },
+  "memory": {
+    "backend": "qmd",
+    "citations": "auto",
+    "qmd": {
+      "paths": [
+        { "name": "notes", "path": "/home/node/.openclaw/workspace/notes", "pattern": "**/*.md" }
+      ],
+      "sessions": { "enabled": true },
+      "update": { "startup": "immediate" }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "port": 18789,
+    "bind": "lan",
+    "tls": {
+      "enabled": true,
+      "certPath": "/home/node/.openclaw/certs/cert.pem",
+      "keyPath": "/home/node/.openclaw/certs/key.pem"
+    },
+    "http": {
+      "endpoints": {
+        "chatCompletions": { "enabled": true }
+      }
+    },
+    "controlUi": {
+      "allowedOrigins": ["https://eevee.local:18789", "https://192.168.1.63:18789", "https://eevee:18789", "https://100.72.77.73:18789"],
+      "dangerouslyAllowHostHeaderOriginFallback": true
+    }
+  },
+  "mcp": {
+    "servers": {
+      "gmail": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "mcp-remote",
+          "https://backend.composio.dev/v3/mcp/f6e0930c-caa6-4bae-8568-8f36294c91a3/mcp?user_id=sam",
+          "--header",
+          "x-api-key:${COMPOSIO_API_KEY}"
+        ]
+      }
+    }
+  }
+}

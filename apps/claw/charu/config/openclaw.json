@@ -1,0 +1,85 @@
+{
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-6"
+      },
+      "sandbox": {
+        "mode": "off"
+      },
+      "memorySearch": {
+        "enabled": true
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "identity": {
+          "name": "Hedwig",
+          "theme": "reliable, smart personal assistant who always delivers",
+          "emoji": "🦉"
+        }
+      }
+    ]
+  },
+  "channels": {
+    "discord": {
+      "enabled": true,
+      "token": {
+        "source": "env",
+        "provider": "default",
+        "id": "HEDWIG_DISCORD_TOKEN"
+      },
+      "dmPolicy": "allowlist",
+      "dm": {
+        "allowFrom": ["326789639883063296"]
+      },
+      "groupPolicy": "allowlist",
+      "guilds": {
+        "1485250494749479098": {
+          "requireMention": false,
+          "users": ["326789639883063296"]
+        }
+      }
+    }
+  },
+  "memory": {
+    "backend": "qmd",
+    "citations": "auto",
+    "qmd": {
+      "paths": [
+        { "name": "notes", "path": "/home/node/.openclaw/workspace/notes", "pattern": "**/*.md" }
+      ],
+      "sessions": { "enabled": true },
+      "update": { "startup": "immediate" }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "port": 18789,
+    "bind": "lan",
+    "tls": {
+      "enabled": true,
+      "certPath": "/home/node/.openclaw/certs/cert.pem",
+      "keyPath": "/home/node/.openclaw/certs/key.pem"
+    },
+    "controlUi": {
+      "allowedOrigins": ["https://eevee.local:18790", "https://192.168.1.63:18790", "https://eevee:18790", "https://100.72.77.73:18790"],
+      "dangerouslyAllowHostHeaderOriginFallback": true
+    }
+  },
+  "mcp": {
+    "servers": {
+      "google-calendar": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "mcp-remote",
+          "https://backend.composio.dev/v3/mcp/e7b26074-5f91-4e95-ada0-e9c056828c99/mcp?user_id=charu",
+          "--header",
+          "x-api-key:${COMPOSIO_API_KEY}"
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,157 @@
+services:
+  # ── Dobby (Sam's agent) ──────────────────────────────
+  dobby:
+    build: .
+    image: pokedesk/openclaw:latest
+    container_name: dobby
+    restart: unless-stopped
+    group_add:
+      - "984"
+    ports:
+      - "18789:18789"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENCLAW_GATEWAY_TOKEN=${DOBBY_GATEWAY_TOKEN}
+      - NODE_OPTIONS=--max-old-space-size=2048
+      - OPENCLAW_GATEWAY_BIND=lan
+      - OPENCLAW_NO_RESPAWN=1
+      - NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+      - DOBBY_DISCORD_TOKEN=${DOBBY_DISCORD_TOKEN}
+      - NODE_EXTRA_CA_CERTS=/home/node/.openclaw/certs/cert.pem
+      - TZ=${TZ:-Asia/Kolkata}
+      - NOTION_TOKEN=${NOTION_TOKEN}
+      - CLOUDFLARE_API_TOKEN=${CLOUDFLARE_API_TOKEN}
+    volumes:
+      - /opt/claw/sam/config:/home/node/.openclaw
+      - /opt/claw/sam/workspace:/home/node/.openclaw/workspace
+      - /opt/claw/certs:/home/node/.openclaw/certs:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/libexec/docker/cli-plugins:/usr/libexec/docker/cli-plugins:ro
+      - /opt/claw/sam/mcp-auth:/home/node/.mcp-auth
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "--insecure", "https://127.0.0.1:18789/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # ── Hedwig (Charu's agent) ───────────────────────────
+  hedwig:
+    build: .
+    image: pokedesk/openclaw:latest
+    container_name: hedwig
+    restart: unless-stopped
+    ports:
+      - "18790:18789"
+      - "127.0.0.1:3335:3335"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENCLAW_GATEWAY_TOKEN=${HEDWIG_GATEWAY_TOKEN}
+      - OPENCLAW_GATEWAY_BIND=lan
+      - OPENCLAW_NO_RESPAWN=1
+      - NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+      - HEDWIG_DISCORD_TOKEN=${HEDWIG_DISCORD_TOKEN}
+      - NODE_EXTRA_CA_CERTS=/home/node/.openclaw/certs/cert.pem
+      - TZ=${TZ:-Asia/Kolkata}
+      - NOTION_TOKEN=${NOTION_TOKEN}
+    volumes:
+      - /opt/claw/charu/config:/home/node/.openclaw
+      - /opt/claw/charu/workspace:/home/node/.openclaw/workspace
+      - /opt/claw/certs:/home/node/.openclaw/certs:ro
+      - /opt/claw/charu/mcp-auth:/home/node/.mcp-auth
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "--insecure", "https://127.0.0.1:18789/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # ── Shadowsapphire (Divya's agent) ───────────────────
+  shadowsapphire:
+    build: .
+    image: pokedesk/openclaw:latest
+    container_name: shadowsapphire
+    restart: unless-stopped
+    ports:
+      - "18792:18789"
+      - "127.0.0.1:1455:1455"
+      - "127.0.0.1:3334:3334"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENCLAW_GATEWAY_TOKEN=${SHADOWSAPPHIRE_GATEWAY_TOKEN}
+      - OPENCLAW_GATEWAY_BIND=lan
+      - OPENCLAW_NO_RESPAWN=1
+      - NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+      - SHADOWSAPPHIRE_DISCORD_TOKEN=${SHADOWSAPPHIRE_DISCORD_TOKEN}
+      - NODE_EXTRA_CA_CERTS=/home/node/.openclaw/certs/cert.pem
+      - TZ=${TZ:-Asia/Kolkata}
+    volumes:
+      - /opt/claw/divya/config:/home/node/.openclaw
+      - /opt/claw/divya/workspace:/home/node/.openclaw/workspace
+      - /opt/claw/certs:/home/node/.openclaw/certs:ro
+      - /opt/claw/divya/mcp-auth:/home/node/.mcp-auth
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "--insecure", "https://127.0.0.1:18789/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # ── Olmec (Arpit's agent) ────────────────────────────
+  olmec:
+    build: .
+    image: pokedesk/openclaw:latest
+    container_name: olmec
+    restart: unless-stopped
+    ports:
+      - "18793:18789"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENCLAW_GATEWAY_TOKEN=${OLMEC_GATEWAY_TOKEN}
+      - OPENCLAW_GATEWAY_BIND=lan
+      - OPENCLAW_NO_RESPAWN=1
+      - NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+      - OLMEC_DISCORD_TOKEN=${OLMEC_DISCORD_TOKEN}
+      - NODE_EXTRA_CA_CERTS=/home/node/.openclaw/certs/cert.pem
+      - TZ=${TZ:-Asia/Kolkata}
+    volumes:
+      - /opt/claw/arpit/config:/home/node/.openclaw
+      - /opt/claw/arpit/workspace:/home/node/.openclaw/workspace
+      - /opt/claw/certs:/home/node/.openclaw/certs:ro
+      - /opt/claw/arpit/mcp-auth:/home/node/.mcp-auth
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "--insecure", "https://127.0.0.1:18789/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # ── Hanuman (Kahran's agent) ─────────────────────────
+  hanuman:
+    build: .
+    image: pokedesk/openclaw:latest
+    container_name: hanuman
+    restart: unless-stopped
+    ports:
+      - "18794:18789"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENCLAW_GATEWAY_TOKEN=${HANUMAN_GATEWAY_TOKEN}
+      - OPENCLAW_GATEWAY_BIND=lan
+      - OPENCLAW_NO_RESPAWN=1
+      - NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
+      - HANUMAN_DISCORD_TOKEN=${HANUMAN_DISCORD_TOKEN}
+      - NODE_EXTRA_CA_CERTS=/home/node/.openclaw/certs/cert.pem
+      - TZ=${TZ:-Asia/Kolkata}
+    volumes:
+      - /opt/claw/kahran/config:/home/node/.openclaw
+      - /opt/claw/kahran/workspace:/home/node/.openclaw/workspace
+      - /opt/claw/certs:/home/node/.openclaw/certs:ro
+      - /opt/claw/kahran/mcp-auth:/home/node/.mcp-auth
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "--insecure", "https://127.0.0.1:18789/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
