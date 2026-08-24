@@ -16,7 +16,7 @@ Accounts: `work` = soumyadeep@dashverse.ai, `personal` = not yet configured
 
 ## Obsidian Notes
 
-Sam's full Obsidian vault is synced to `notes/` directory. Direct filesystem access.
+Sam's Obsidian vault **is** the `notes/` folder (`~/.openclaw/workspace/notes`) — a real Dropbox-synced directory (same Maestral mechanism as `~/Dropbox`). Direct filesystem access.
 
 | Action | Command |
 |--------|---------|
@@ -25,4 +25,4 @@ Sam's full Obsidian vault is synced to `notes/` directory. Direct filesystem acc
 | Search notes | `grep -rl "search term" notes/` |
 | Create note | Write .md file to `notes/` |
 
-Changes sync to Sam's Obsidian vault within 5 minutes.
+Changes sync **two-way via Dropbox (Maestral), usually within seconds** to Sam's Obsidian on his laptop. It is NOT a 5-minute poll, NOT a background job you trigger, and NOT tied to a Git commit — just write the `.md` file and it propagates. (If a change looks stuck for more than a few minutes, Maestral may be paused; a watchdog auto-restarts it.)

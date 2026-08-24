@@ -50,6 +50,6 @@ echo "New content" >> notes/existing-note.md
 ## Important
 
 - Only `.md` files sync
-- Changes sync to Sam's Obsidian vault within 5 minutes
+- Changes sync to Sam's Obsidian vault via Dropbox (near-instant, two-way)
 - You do NOT need obsidian-cli — use standard shell commands
 - The vault contains personal notes, work docs, journals, and people notes
