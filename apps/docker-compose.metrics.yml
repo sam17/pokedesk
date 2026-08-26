@@ -27,9 +27,15 @@ services:
     environment:
       - WHOOP_CLIENT_ID=${WHOOP_CLIENT_ID}
       - WHOOP_CLIENT_SECRET=${WHOOP_CLIENT_SECRET}
-      - WHOOP_ACCESS_TOKEN=${WHOOP_ACCESS_TOKEN}
-      - WHOOP_REFRESH_TOKEN=${WHOOP_REFRESH_TOKEN}
       - DATABASE_URL=${DATABASE_URL}
+    # WHOOP_ACCESS_TOKEN / WHOOP_REFRESH_TOKEN intentionally NOT passed via
+    # environment: -- they live in the mounted .env so the script's
+    # load_dotenv() picks them up and _update_env_file() can persist rotations.
+    # If they were in environment:, load_dotenv() would NOT override them and
+    # the rotation would be silently lost.
+    # Source path must exist on psyduck: /home/pi/whoop-env/.env (mode 600).
+    volumes:
+      - /home/pi/whoop-env/.env:/app/.env
 
 configs:
   registry-auth:

@@ -22,12 +22,13 @@ services:
         parallelism: 1
         delay: 10s
         order: start-first
+    # env_file passes every var from .env into the container. The previous
+    # `environment:` block re-declared three of them as ${VAR}, which docker
+    # compose interpolates against the deploying shell -- and when the stack
+    # was deployed without `set -a; . .env; set +a` first, those resolved to
+    # empty strings and SHADOWED the real values from env_file.
     env_file:
       - .env
-    environment:
-      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
-      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
-      - HOME_ASSISTANT_IP=${HOME_ASSISTANT_IP}
 
 secrets:
   registry_auth:
