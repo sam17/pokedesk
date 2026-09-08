@@ -1,4 +1,4 @@
-FROM ghcr.io/openclaw/openclaw:latest
+FROM ghcr.io/openclaw/openclaw:2026.9.2
 
 USER root
 
@@ -9,6 +9,7 @@ RUN apt-get update -qq && \
     vdirsyncer \
     khal \
     cargo \
+    build-essential \
     docker.io \
     chromium && \
     rm -rf /var/lib/apt/lists/*
@@ -17,6 +18,6 @@ RUN apt-get update -qq && \
 RUN pip3 install --break-system-packages gcalcli google-api-python-client google-auth google-auth-oauthlib google-auth-httplib2
 
 # Node global packages
-RUN npm i -g clawdhub undici mcp-remote @tobilu/qmd
+RUN npm i -g clawdhub undici mcp-remote @tobilu/qmd @openai/codex smol-toml
 
 USER node
