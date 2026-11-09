@@ -6,7 +6,7 @@ services:
     container_name: dobby
     restart: unless-stopped
     group_add:
-      - "984"
+      - "985"
     ports:
       - "18789:18789"
     environment:
@@ -31,66 +31,6 @@ services:
       - /opt/claw/sam/mcp-auth:/home/node/.mcp-auth
       - /opt/claw/sam/dropbox:/home/node/Dropbox
       - /opt/claw/sam/dropbox/pensieve:/home/node/.openclaw/workspace/notes
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "--insecure", "https://127.0.0.1:18789/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
-
-  # ── Hedwig (Charu's agent) ───────────────────────────
-  hedwig:
-    build: .
-    image: pokedesk/openclaw:latest
-    container_name: hedwig
-    restart: unless-stopped
-    ports:
-      - "18790:18789"
-      - "127.0.0.1:3335:3335"
-    environment:
-      - OPENCLAW_GATEWAY_TOKEN=${HEDWIG_GATEWAY_TOKEN}
-      - OPENCLAW_GATEWAY_BIND=lan
-      - OPENCLAW_NO_RESPAWN=1
-      - NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
-      - HEDWIG_DISCORD_TOKEN=${HEDWIG_DISCORD_TOKEN}
-      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
-      - NODE_EXTRA_CA_CERTS=/home/node/.openclaw/certs/cert.pem
-      - TZ=${TZ:-Asia/Kolkata}
-      - NOTION_TOKEN=${NOTION_TOKEN}
-    volumes:
-      - /opt/claw/charu/config:/home/node/.openclaw
-      - /opt/claw/charu/workspace:/home/node/.openclaw/workspace
-      - /opt/claw/certs:/home/node/.openclaw/certs:ro
-      - /opt/claw/charu/mcp-auth:/home/node/.mcp-auth
-    healthcheck:
-      test: ["CMD", "curl", "-sf", "--insecure", "https://127.0.0.1:18789/healthz"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 90s
-
-  # ── Olmec (Arpits agent) ────────────────────────────
-  olmec:
-    build: .
-    image: pokedesk/openclaw:latest
-    container_name: olmec
-    restart: unless-stopped
-    ports:
-      - "18793:18789"
-    environment:
-      - OPENCLAW_GATEWAY_TOKEN=${OLMEC_GATEWAY_TOKEN}
-      - OPENCLAW_GATEWAY_BIND=lan
-      - OPENCLAW_NO_RESPAWN=1
-      - NODE_COMPILE_CACHE=/var/tmp/openclaw-compile-cache
-      - OLMEC_DISCORD_TOKEN=${OLMEC_DISCORD_TOKEN}
-      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
-      - NODE_EXTRA_CA_CERTS=/home/node/.openclaw/certs/cert.pem
-      - TZ=${TZ:-Asia/Kolkata}
-    volumes:
-      - /opt/claw/arpit/config:/home/node/.openclaw
-      - /opt/claw/arpit/workspace:/home/node/.openclaw/workspace
-      - /opt/claw/certs:/home/node/.openclaw/certs:ro
-      - /opt/claw/arpit/mcp-auth:/home/node/.mcp-auth
     healthcheck:
       test: ["CMD", "curl", "-sf", "--insecure", "https://127.0.0.1:18789/healthz"]
       interval: 30s
