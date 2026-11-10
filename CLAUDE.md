@@ -74,6 +74,8 @@ apps/
   docker-compose.yml          # Main swarm stack (ha-monitoring service)
   docker-compose.metrics.yml  # Metrics stack (whoop-collector service)
   deploy.sh                   # Swarm deployment script
+hardware/
+  pi-zero-tower/       # Parametric 3D-printable stacking case for Pi Zeros (uv run zero_tower.py → stl/)
 conf/
   wpa_supplicant.conf  # WiFi config template for Pi setup
 init/

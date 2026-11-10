@@ -7,3 +7,7 @@
 .env
 *.env
 **/.env
+
+# Python / Wrangler build artefacts
+__pycache__/
+.wrangler/

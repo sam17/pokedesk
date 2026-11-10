@@ -1,0 +1,12 @@
+name = "pokedesk-zero-tower"
+main = "worker.js"
+compatibility_date = "2025-01-01"
+
+routes = [
+  { pattern = "soumyadeep.in/pokedesk/zero-tower*", zone_name = "soumyadeep.in" }
+]
+
+rules = [
+  { type = "Text", globs = ["**/*.html"], fallthrough = true },
+  { type = "Data", globs = ["**/*.stl"], fallthrough = true }
+]
