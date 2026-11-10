@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pi Zero Tower</title>
+<meta name="description" content="Print brief: a black and white PLA case for Raspberry Pi Zero boards.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<style>
+  :root{
+    --bg:#f6f4ef; --fg:#1d1d1f; --muted:#6b6862; --line:#dedad2; --card:#ffffff;
+    --accent:#c98a1e; --accent-ink:#1d1d1f; --stage:#9a9ea6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#121316; --fg:#ecebe8; --muted:#9a978f; --line:#2a2c31; --card:#1a1c20; --accent:#e8b04a; --accent-ink:#121316; --stage:#4a4e57; }
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--fg);font:16px/1.6 "IBM Plex Sans",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  main{max-width:920px;margin:0 auto;padding:48px 16px 80px}
+  .eyebrow{font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  h1{font:600 clamp(28px,5vw,40px)/1.15 "IBM Plex Mono",monospace;margin:10px 0 14px;letter-spacing:-.01em}
+  .lede{color:var(--muted);max-width:640px}
+  .stage{position:relative;height:min(62vh,520px);min-height:320px;margin:32px 0 12px;border-radius:12px;overflow:hidden;background:var(--stage)}
+  .stage canvas{display:block;width:100%;height:100%;touch-action:none}
+  .msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#8a8a8a;font:14px "IBM Plex Mono",monospace}
+  .hint{position:absolute;left:14px;bottom:12px;color:#f2f2f2;opacity:.8;font:12px "IBM Plex Mono",monospace;pointer-events:none}
+  .ctrl{display:flex;flex-wrap:wrap;gap:8px}
+  .ctrl button{font:500 13px "IBM Plex Mono",monospace;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+  .ctrl button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:36px 0}
+  .stat{background:var(--card);padding:16px}
+  .stat b{display:block;font:600 22px/1.2 "IBM Plex Mono",monospace}
+  .stat span{color:var(--muted);font-size:13px}
+  @media (max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
+  h2{font:600 14px/1 "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;margin:40px 0 14px}
+  ul{padding-left:1.2em} li{margin:6px 0} li::marker{color:var(--accent)}
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+  @media (max-width:720px){.cols{grid-template-columns:1fr}}
+  .files{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+  .files a{display:inline-flex;gap:10px;align-items:center;text-decoration:none;color:var(--fg);border:1px solid var(--line);background:var(--card);padding:10px 14px;border-radius:10px;font:13px "IBM Plex Mono",monospace}
+  .files a:hover{border-color:var(--accent)}
+  .files small{color:var(--muted)}
+  code{font:13px "IBM Plex Mono",monospace;background:var(--card);border:1px solid var(--line);padding:1px 5px;border-radius:5px}
+  footer{margin-top:56px;color:var(--muted);font-size:13px}
+  footer a{color:inherit}
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">print brief</div>
+  <h1>Pi Zero tower</h1>
+  <p class="lede">Thanks for printing this! It's <b>5 parts</b> in <b>black &amp; white PLA</b>: 4 identical trays and 1 lid. Everything you need is on this page.</p>
+
+  <div class="stage" id="stage"><div class="msg" id="msg">loading model…</div><div class="hint">drag to rotate · scroll to zoom</div></div>
+  <div class="ctrl" role="group" aria-label="View">
+    <button data-v="assembled" aria-pressed="true">Assembled</button>
+    <button data-v="exploded" aria-pressed="false">Exploded</button>
+    <button data-v="tray" aria-pressed="false">Tray</button>
+    <button data-v="lid" aria-pressed="false">Lid</button>
+  </div>
+
+  <h2>1 · Download</h2>
+  <p style="color:var(--muted);font-size:14px;margin-bottom:10px">Each part is a white file plus a black file.</p>
+  <div class="files">
+    <a href="/pokedesk/zero-tower/tray_white.stl" download>tray_white.stl</a>
+    <a href="/pokedesk/zero-tower/tray_black.stl" download>tray_black.stl</a>
+    <a href="/pokedesk/zero-tower/lid_white.stl" download>lid_white.stl</a>
+    <a href="/pokedesk/zero-tower/lid_black.stl" download>lid_black.stl</a>
+  </div>
+
+  <h2>2 · Load into the slicer</h2>
+  <ul>
+    <li>Import <code>tray_white.stl</code> and <code>tray_black.stl</code> <b>together</b> and answer <b>Yes</b> to “load as a single object with multiple parts”.</li>
+    <li>Do the same with <code>lid_white.stl</code> + <code>lid_black.stl</code>.</li>
+    <li>Assign <b>white</b> filament to the <code>_white</code> parts and <b>black</b> to the <code>_black</code> parts.</li>
+    <li>Make <b>4</b> copies of the tray and keep <b>1</b> lid. All 5 fit on one plate.</li>
+  </ul>
+
+  <h2>3 · Settings</h2>
+  <ul>
+    <li><b>PLA</b>, white + black</li>
+    <li>0.2 mm layers, 3 walls, 20–25% infill</li>
+    <li><b>No supports</b>. The openings are short bridges.</li>
+    <li><b>Don't scale or rotate.</b> The holes are sized for specific screws, and orientation is already set: trays print floor-down, and the lid prints top-down so the black text is the first layers.</li>
+  </ul>
+
+  <div class="stats" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat"><b>5</b><span>parts (4 trays + lid)</span></div>
+    <div class="stat"><b>~50 g</b><span>PLA in total</span></div>
+    <div class="stat"><b>78×43</b><span>mm per part</span></div>
+  </div>
+
+  <p style="color:var(--muted)">No hardware needed on your side. Screws and inserts get added after printing.</p>
+</main>
+
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {STLLoader} from 'three/addons/loaders/STLLoader.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+const BASE='/pokedesk/zero-tower/', N=4, PITCH=15, LID_T=2.4;
+const stage=document.getElementById('stage'), msg=document.getElementById('msg');
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+stage.prepend(renderer.domElement);
+const scene=new THREE.Scene(); scene.background=new THREE.Color(getComputedStyle(stage).backgroundColor);
+const cam=new THREE.PerspectiveCamera(35,1,1,2000); cam.up.set(0,0,1);
+const ctl=new OrbitControls(cam,renderer.domElement); ctl.enableDamping=true;
+scene.add(new THREE.HemisphereLight(0xffffff,0x334455,1.1));
+const sun=new THREE.DirectionalLight(0xffffff,1.6); sun.position.set(120,-160,220); scene.add(sun);
+const fill=new THREE.DirectionalLight(0xffffff,.5); fill.position.set(-150,120,60); scene.add(fill);
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix();}
+addEventListener('resize',resize); resize();
+const mat=c=>new THREE.MeshStandardMaterial({color:c,roughness:.6,metalness:.05,side:THREE.DoubleSide});
+const white=mat(0xf2f2f0), black=mat(0x1e1e20), pcbMat=mat(0x2e8b57), plugMat=mat(0x2a2a2a);
+const socMat=new THREE.MeshStandardMaterial({color:0x777777,metalness:.6,roughness:.4});
+const L=new STLLoader(), load=u=>new Promise((res,rej)=>L.load(u,res,undefined,rej));
+let G;
+try{G=await Promise.all(['tray_white','tray_black','lid_white','lid_black'].map(n=>load(BASE+n+'.stl')));}catch(e){msg.textContent='could not load model';throw e;}
+G.forEach(g=>g.computeVertexNormals()); msg.remove();
+const [tw,tb,lw,lb]=G;
+// a two-colour part as a group; the lid STLs are stored print-orientation (upside down)
+function part(gw,gb,flip){const g=new THREE.Group();g.add(new THREE.Mesh(gw,white),new THREE.Mesh(gb,black));
+  if(flip){g.scale.z=-1;g.position.z=LID_T;} const o=new THREE.Group(); o.add(g); return o;}
+// rough Pi Zero for context: PCB origin (3,3), PCB bottom z=5.6 inside a tray
+function pi(z){const g=new THREE.Group();
+  const b=new THREE.Mesh(new THREE.BoxGeometry(65,30,1.4),pcbMat); b.position.set(35.5,18,z+.7); g.add(b);
+  const s=new THREE.Mesh(new THREE.BoxGeometry(14,14,6.2),socMat); s.position.set(35,20,z+4.5); g.add(s); return g;}
+function plug(z){const g=new THREE.Group(),x=57,zc=z+2.8;
+  const p=new THREE.Mesh(new THREE.BoxGeometry(10.4,18,7.2),plugMat); p.position.set(x,-7,zc); g.add(p);
+  const c=new THREE.Mesh(new THREE.CylinderGeometry(1.8,1.8,30,16),plugMat); c.position.set(x,-31,zc); g.add(c); return g;}
+let root=new THREE.Group(); scene.add(root);
+function build(v){
+  scene.remove(root); root=new THREE.Group();
+  if(v==='assembled'||v==='exploded'){
+    const ex=v==='exploded', gap=ex?16:0;
+    for(let i=0;i<N;i++){const z=i*(PITCH+gap);
+      const t=part(tw,tb); t.position.z=z; root.add(t);
+      root.add(pi(z+5.6+(ex?8:0))); if(!ex) root.add(plug(z+5.6));}
+    const l=part(lw,lb,true); l.position.z=N*(PITCH+gap)+(ex?8:0); root.add(l);
+  } else if(v==='tray') root.add(part(tw,tb));
+  else {const l=part(lw,lb,true); root.add(l);}
+  scene.add(root);
+  const box=new THREE.Box3().setFromObject(root), c=box.getCenter(new THREE.Vector3()), r=box.getSize(new THREE.Vector3()).length()/2;
+  const d=r/Math.sin(THREE.MathUtils.degToRad(cam.fov/2))*.85;
+  ctl.target.copy(c); cam.position.set(c.x+d*.55,c.y-d*.75,c.z+d*.4); cam.near=d/50; cam.far=d*10; cam.updateProjectionMatrix();
+}
+build('assembled');
+document.querySelectorAll('.ctrl button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.ctrl button').forEach(x=>x.setAttribute('aria-pressed',x===b)); build(b.dataset.v);});
+(function loop(){requestAnimationFrame(loop);ctl.update();renderer.render(scene,cam);})();
+</script>
+</body>
+</html>
