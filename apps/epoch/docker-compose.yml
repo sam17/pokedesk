@@ -1,0 +1,70 @@
+# epoch.me deployment on eevee (Raspberry Pi 5, ARM64).
+# App code lives in github.com/sam17/epoch.me; its CI publishes multi-arch images
+# to the DO Container Registry. This compose PULLS those images (no on-device build).
+# See README.md for first-time setup (DO CR login, .env, rclone, DB restore, tunnel).
+
+services:
+  db:
+    image: postgres:15
+    container_name: epoch-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - epoch_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [epoch]
+
+  viz:
+    image: registry.digitalocean.com/pokedesk-cr/epoch-viz:latest
+    container_name: epoch-viz
+    restart: unless-stopped
+    environment:
+      HOST: db                 # viz connects to the db service by name
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASS}
+      DB_NAME: ${DB_NAME}
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [epoch]
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: epoch-cloudflared
+    restart: unless-stopped
+    # Remotely-managed tunnel; public hostname (metrics.soumyadeep.in -> http://viz:8080)
+    # is configured in the Cloudflare Zero Trust dashboard.
+    command: tunnel --no-autoupdate run --token ${CF_TUNNEL_TOKEN}
+    depends_on: [viz]
+    networks: [epoch]
+
+  backup:
+    image: registry.digitalocean.com/pokedesk-cr/epoch-backup:latest
+    container_name: epoch-backup
+    restart: unless-stopped
+    env_file: ./backup.env       # DATABASE_URL=postgres://USER:PASS@db:5432/DBNAME
+    volumes:
+      - /opt/backups/fxlifesheet:/backups
+      - /home/pi/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [epoch]
+
+volumes:
+  epoch_pg:
+
+# Named so other stacks (e.g. the lifesheet Discord bot in apps/claw) can join it
+# as an external network and reach `epoch-db`.
+networks:
+  epoch:
+    name: epoch
